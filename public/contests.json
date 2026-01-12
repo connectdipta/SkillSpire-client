@@ -1,0 +1,90 @@
+[
+  {
+    "name": "Frontend Coding Challenge",
+    "type": "Coding",
+    "image": "https://i.pinimg.com/736x/96/d1/cc/96d1cc416bfc7a2a0a16feb235f1defa.jpg",
+    "description": "Solve real-world frontend problems using React, Tailwind CSS, and modern UI practices.",
+    "participants": 520,
+    "status": "confirmed"
+  },
+  {
+    "name": "UI/UX Design Contest",
+    "type": "Design",
+    "image": "https://i.pinimg.com/1200x/49/73/29/497329b04a35071ca767c394759bce26.jpg",
+    "description": "Design a clean, modern, and user-friendly interface for a startup product idea.",
+    "participants": 430,
+    "status": "confirmed"
+  },
+  {
+    "name": "JavaScript Quiz Battle",
+    "type": "Quiz",
+    "image": "https://i.pinimg.com/736x/6e/cd/05/6ecd05e38861082a329199dc42d6d602.jpg",
+    "description": "Test your JavaScript knowledge with timed MCQs and logic-based challenges.",
+    "participants": 610,
+    "status": "confirmed"
+  },
+  {
+    "name": "Photography Contest",
+    "type": "Photography",
+    "image": "https://i.pinimg.com/736x/cc/90/0d/cc900de0e8c78e18ce2352229388a2fa.jpg",
+    "description": "Capture stunning moments and showcase your creativity through photography.",
+    "participants": 290,
+    "status": "confirmed"
+  },
+  {
+    "name": "Competitive Programming Marathon",
+    "type": "Coding",
+    "image": "https://i.pinimg.com/736x/1f/87/b2/1f87b29a2df46100a75aa86b170a21cb.jpg",
+    "description": "Solve complex algorithmic problems using C++, Java, or Python under time pressure.",
+    "participants": 780,
+    "status": "confirmed"
+  },
+  {
+    "name": "Content Writing Challenge",
+    "type": "Writing",
+    "image": "https://i.pinimg.com/736x/22/b4/dd/22b4dd6d916905058a59c0197f94d25b.jpg",
+    "description": "Write engaging articles on technology, innovation, and future trends.",
+    "participants": 310,
+    "status": "confirmed"
+  },
+  {
+    "name": "Data Analysis Challenge",
+    "type": "Data",
+    "image": "https://i.pinimg.com/736x/32/53/ee/3253ee0954569773f430926def883beb.jpg",
+    "description": "Analyze real datasets and present insights using charts and dashboards.",
+    "participants": 260,
+    "status": "confirmed"
+  },
+  {
+    "name": "Digital Marketing Strategy Contest",
+    "type": "Marketing",
+    "image": "https://i.pinimg.com/1200x/ab/e1/38/abe13885449b56a818403f649c05ed55.jpg",
+    "description": "Create a winning digital marketing strategy for a new online product.",
+    "participants": 340,
+    "status": "confirmed"
+  },
+  {
+    "name": "AI Prompt Engineering Contest",
+    "type": "AI",
+    "image": "https://i.pinimg.com/736x/a0/05/ca/a005ca1628432898956933e5f1673855.jpg",
+    "description": "Craft effective AI prompts for creative writing, coding, and automation tasks.",
+    "participants": 470,
+    "status": "confirmed"
+  },
+  {
+    "name": "Bug Bounty Challenge",
+    "type": "Security",
+    "image": "https://i.pinimg.com/736x/9d/ef/a5/9defa576df852ac2f1a7d126dab1ed32.jpg",
+    "description": "Find bugs and security vulnerabilities in provided sample applications.",
+    "participants": 390,
+    "status": "confirmed"
+  },
+  {
+  "name": "Backend Development Hackathon",
+  "type": "Coding",
+  "image": "https://i.pinimg.com/1200x/68/b0/65/68b065a86ecb4df84be6dada37079d8c.jpg",
+  "description": "Build scalable backend APIs using Node.js, Express, and MongoDB with best practices.",
+  "participants": 640,
+  "status": "confirmed"
+}
+]

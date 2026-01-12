@@ -7,6 +7,8 @@ import Register from "../pages/Auth/Register";
 import PrivateRoute from "./PrivateRoute";
 import ErrorPage from "../pages/ErrorPage";
 import AboutUs from "../pages/AboutUs";
+import AllContests from "../pages/AllContests";
+import ContestDetails from "../pages/ContestDetails";
 
 export const router = createBrowserRouter([
   {
@@ -20,9 +22,21 @@ export const router = createBrowserRouter([
       },
       {
         path: "aboutUs",
+        element: (<AboutUs />),
+      },
+      {
+        path: "all-contests",
         element: (
           <PrivateRoute>
-            <AboutUs />
+            <AllContests />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "contests/:id",
+        element: (
+          <PrivateRoute>
+            <ContestDetails />
           </PrivateRoute>
         ),
       },
