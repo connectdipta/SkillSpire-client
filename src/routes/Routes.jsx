@@ -22,6 +22,11 @@ import MyContests from "../pages/dashboard/creator/MyContests";
 import Submissions from "../pages/dashboard/creator/Submissions";
 import EditContest from "../pages/dashboard/creator/EditContest";
 
+/* -------- User Dashboard -------- */
+import ParticipatedContests from "../pages/dashboard/user/ParticipatedContests";
+import WinningContests from "../pages/dashboard/user/WinningContests";
+import MyProfile from "../pages/dashboard/user/MyProfile";
+
 /* -------- Admin Dashboard -------- */
 import ManageUsers from "../pages/dashboard/admin/ManageUsers";
 import ManageContests from "../pages/dashboard/admin/ManageContests";
@@ -63,6 +68,7 @@ export const router = createBrowserRouter([
   {
     path: "/",
     element: <AuthLayout />,
+    errorElement: <ErrorPage />,
     children: [
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
@@ -77,8 +83,9 @@ export const router = createBrowserRouter([
         <DashboardLayout />
       </PrivateRoute>
     ),
+    errorElement: <ErrorPage />,
     children: [
-      /* -------- Creator -------- */
+      /* -------- CREATOR -------- */
       {
         path: "add-contest",
         element: (
@@ -112,7 +119,21 @@ export const router = createBrowserRouter([
         ),
       },
 
-      /* -------- Admin -------- */
+      /* -------- USER -------- */
+      {
+        path: "participated",
+        element: <ParticipatedContests />,
+      },
+      {
+        path: "winnings",
+        element: <WinningContests />,
+      },
+      {
+        path: "profile",
+        element: <MyProfile />,
+      },
+
+      /* -------- ADMIN -------- */
       {
         path: "manage-users",
         element: (
