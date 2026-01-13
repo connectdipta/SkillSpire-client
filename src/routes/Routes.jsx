@@ -1,34 +1,45 @@
 import { createBrowserRouter } from "react-router";
+
+/* -------- Layouts -------- */
 import RootLayout from "../layout/RootLayout";
 import AuthLayout from "../layout/AuthLayout";
 import DashboardLayout from "../layout/DashboardLayout";
 
+/* -------- Public Pages -------- */
 import Home from "../pages/Home";
-import Login from "../pages/Auth/Login";
-import Register from "../pages/Auth/Register";
 import AboutUs from "../pages/AboutUs";
 import AllContests from "../pages/AllContests";
 import ContestDetails from "../pages/ContestDetails";
 import ErrorPage from "../pages/ErrorPage";
 
-import PrivateRoute from "./PrivateRoute";
+/* -------- Auth Pages -------- */
+import Login from "../pages/Auth/Login";
+import Register from "../pages/Auth/Register";
 
-// Dashboard pages
+/* -------- Creator Dashboard -------- */
 import AddContest from "../pages/dashboard/creator/AddContest";
 import MyContests from "../pages/dashboard/creator/MyContests";
 import Submissions from "../pages/dashboard/creator/Submissions";
+import EditContest from "../pages/dashboard/creator/EditContest";
+
+/* -------- Admin Dashboard -------- */
+import ManageUsers from "../pages/dashboard/admin/ManageUsers";
+import ManageContests from "../pages/dashboard/admin/ManageContests";
+
+/* -------- Route Guards -------- */
+import PrivateRoute from "./PrivateRoute";
+import CreatorRoute from "./CreatorRoute";
+import AdminRoute from "./AdminRoute";
 
 export const router = createBrowserRouter([
-  /* ---------- MAIN SITE ---------- */
+  /* ================= MAIN SITE ================= */
   {
     path: "/",
     element: <RootLayout />,
     errorElement: <ErrorPage />,
     children: [
       { index: true, element: <Home /> },
-
       { path: "aboutUs", element: <AboutUs /> },
-
       {
         path: "all-contests",
         element: (
@@ -37,7 +48,6 @@ export const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
-
       {
         path: "contests/:id",
         element: (
@@ -49,7 +59,7 @@ export const router = createBrowserRouter([
     ],
   },
 
-  /* ---------- AUTH ---------- */
+  /* ================= AUTH ================= */
   {
     path: "/",
     element: <AuthLayout />,
@@ -59,7 +69,7 @@ export const router = createBrowserRouter([
     ],
   },
 
-  /* ---------- DASHBOARD (PRIVATE) ---------- */
+  /* ================= DASHBOARD ================= */
   {
     path: "/dashboard",
     element: (
@@ -68,21 +78,56 @@ export const router = createBrowserRouter([
       </PrivateRoute>
     ),
     children: [
-      {
-        index: true,
-        element: <AddContest />,
-      },
+      /* -------- Creator -------- */
       {
         path: "add-contest",
-        element: <AddContest />,
+        element: (
+          <CreatorRoute>
+            <AddContest />
+          </CreatorRoute>
+        ),
       },
       {
         path: "my-contests",
-        element: <MyContests />,
+        element: (
+          <CreatorRoute>
+            <MyContests />
+          </CreatorRoute>
+        ),
       },
       {
         path: "submissions",
-        element: <Submissions />,
+        element: (
+          <CreatorRoute>
+            <Submissions />
+          </CreatorRoute>
+        ),
+      },
+      {
+        path: "edit/:id",
+        element: (
+          <CreatorRoute>
+            <EditContest />
+          </CreatorRoute>
+        ),
+      },
+
+      /* -------- Admin -------- */
+      {
+        path: "manage-users",
+        element: (
+          <AdminRoute>
+            <ManageUsers />
+          </AdminRoute>
+        ),
+      },
+      {
+        path: "manage-contests",
+        element: (
+          <AdminRoute>
+            <ManageContests />
+          </AdminRoute>
+        ),
       },
     ],
   },

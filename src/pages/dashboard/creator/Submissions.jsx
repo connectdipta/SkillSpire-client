@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 const Submissions = () => {
   const [searchParams] = useSearchParams();
   const contestId = searchParams.get("contestId");
+
   const [submissions, setSubmissions] = useState([]);
 
   useEffect(() => {
@@ -18,37 +19,25 @@ const Submissions = () => {
 
   const declareWinner = async (submission) => {
     await axiosPublic.post(`/contests/${contestId}/winner`, {
-      name: submission.userName || "Winner",
+      name: submission.userName,
       email: submission.userEmail,
-      photo: submission.userPhoto || "",
+      photo: submission.userPhoto,
     });
 
-    Swal.fire("Winner Declared 🎉", "Contest updated successfully", "success");
+    Swal.fire("Winner Declared 🏆", "", "success");
   };
-
-  if (!submissions.length) {
-    return (
-      <p className="text-center py-10 text-base-content/60">
-        No submissions yet.
-      </p>
-    );
-  }
 
   return (
     <div>
-      <h2 className="text-3xl font-bold mb-6">Submitted Tasks</h2>
+      <h2 className="text-3xl font-bold mb-6">Submissions</h2>
+
+      {!submissions.length && <p>No submissions yet.</p>}
 
       <div className="space-y-4">
         {submissions.map(sub => (
-          <div
-            key={sub._id}
-            className="bg-base-200 p-5 rounded-2xl shadow"
-          >
-            <p className="font-semibold">{sub.userEmail}</p>
-
-            <p className="mt-2 text-sm text-base-content/70">
-              {sub.content}
-            </p>
+          <div key={sub._id} className="card bg-base-200 p-4 rounded-xl">
+            <p><strong>Email:</strong> {sub.userEmail}</p>
+            <p className="mt-2 text-sm">{sub.content}</p>
 
             <button
               onClick={() => declareWinner(sub)}

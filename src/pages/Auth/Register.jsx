@@ -1,215 +1,170 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import useAuth from '../../hooks/useAuth';
-import GoogleLogin from './GoogleLogin';
-import axios from 'axios';
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
+import axios from "axios";
+import useAuth from "../../hooks/useAuth";
+import axiosPublic from "../../api/axiosPublic";
+import GoogleLogin from "./GoogleLogin";
 
 const Register = () => {
-  const location = useLocation();
+  const { registerUser, updateUserProfile } = useAuth();
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+
   const {
     register,
     handleSubmit,
-    formState: { errors },
     watch,
+    formState: { errors },
   } = useForm();
 
-  const { registerUser, updateUserProfile } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
-  const photoFile = watch("photo");
+  const photo = watch("photo");
 
   const onSubmit = async (data) => {
-    // 🔄 Loading alert
     Swal.fire({
       title: "Creating account...",
-      text: "Please wait",
       allowOutsideClick: false,
-      didOpen: () => {
-        Swal.showLoading();
-      },
+      didOpen: () => Swal.showLoading(),
     });
 
     try {
-      // Upload image
+      /* 🔹 Upload image to imgbb */
       const formData = new FormData();
       formData.append("image", data.photo[0]);
 
-      const imageAPI = `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_imgHost}`;
-      const response = await axios.post(imageAPI, formData);
-      const imageUrl = response.data.data.url;
+      const imgRes = await axios.post(
+        `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_imgHost}`,
+        formData
+      );
 
-      // Create user
+      const photoURL = imgRes.data.data.url;
+
+      /* 🔹 Firebase register */
       await registerUser(data.email, data.password);
 
-      // Update profile
+      /* 🔹 Update Firebase profile */
       await updateUserProfile({
         displayName: data.name,
-        photoURL: imageUrl,
+        photoURL,
       });
 
-      Swal.close();
+      /* 🔹 Save user in MongoDB */
+      await axiosPublic.post("/users", {
+        email: data.email,
+        name: data.name,
+        photo: photoURL,
+      });
 
-      // ✅ Success alert
       Swal.fire({
         icon: "success",
-        title: "Registration Successful!",
-        text: "Welcome to SkillSpire 🎉",
-        timer: 2000,
+        title: "Account Created 🎉",
+        timer: 1800,
         showConfirmButton: false,
       });
 
-      navigate(location?.state || '/');
+      navigate("/");
     } catch (error) {
-      Swal.close();
-
-      // ❌ Error alert
       Swal.fire({
         icon: "error",
         title: "Registration Failed",
-        text: error.message || "Something went wrong. Please try again.",
+        text: error.message || "Something went wrong",
       });
-
-      console.error("Registration error:", error);
+      console.error(error);
     }
   };
 
   return (
-    <div className="w-full">
-      {/* Header */}
+    <div className="w-full max-w-md">
       <h2 className="text-4xl font-extrabold mb-2 text-secondary">
-        Create an Account
+        Create Account
       </h2>
-      <p className="text-gray-600 mb-8">
-        Register with <span className="font-semibold">SkillSpire</span>
-      </p>
+      <p className="text-gray-600 mb-8">Join SkillSpire</p>
 
-      {/* Form */}
-      <form className="space-y-5" onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
-        {/* Photo Upload */}
+        {/* Photo */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">
-            Profile Photo
-          </label>
-
-          {photoFile && photoFile.length > 0 && (
+          {photo && photo.length > 0 && (
             <img
-              src={URL.createObjectURL(photoFile[0])}
-              alt="Preview"
-              className="mt-3 w-24 h-24 object-cover rounded-full border mb-3"
+              src={URL.createObjectURL(photo[0])}
+              alt="preview"
+              className="w-24 h-24 rounded-full mb-3 border"
             />
           )}
-
           <input
             type="file"
-            accept="image/*"
-            {...register("photo", { required: true })}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-700
-            focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
+            {...register("photo", { required: "Photo is required" })}
+            className="file-input file-input-bordered w-full"
           />
           {errors.photo && (
-            <p className="text-red-500 text-sm mt-1">Photo is required</p>
+            <p className="text-red-500 text-sm mt-1">
+              {errors.photo.message}
+            </p>
           )}
         </div>
 
         {/* Name */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">
-            Name
-          </label>
-          <input
-            type="text"
-            placeholder="Name"
-            {...register("name", { required: true })}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-700
-            focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
-          />
-          {errors.name && (
-            <p className="text-red-500 text-sm mt-1">Name is required</p>
-          )}
-        </div>
+        <input
+          placeholder="Name"
+          {...register("name", { required: "Name is required" })}
+          className="input input-bordered w-full"
+        />
+        {errors.name && (
+          <p className="text-red-500 text-sm">{errors.name.message}</p>
+        )}
 
         {/* Email */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">
-            Email
-          </label>
-          <input
-            type="email"
-            placeholder="Email"
-            {...register("email", { required: true })}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-700
-            focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
-          />
-          {errors.email && (
-            <p className="text-red-500 text-sm mt-1">Email is required</p>
-          )}
-        </div>
+        <input
+          type="email"
+          placeholder="Email"
+          {...register("email", { required: "Email is required" })}
+          className="input input-bordered w-full"
+        />
+        {errors.email && (
+          <p className="text-red-500 text-sm">{errors.email.message}</p>
+        )}
 
         {/* Password */}
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">
-            Password
-          </label>
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Password"
-              {...register("password", { required: true, minLength: 6 })}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-10 text-gray-700
-              focus:outline-none focus:ring-2 focus:ring-primary/40 transition"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-3 flex items-center
-              text-gray-500 hover:text-secondary transition"
-            >
-              {showPassword ? <FaEyeSlash /> : <FaEye />}
-            </button>
-          </div>
-
-          {errors.password?.type === "required" && (
-            <p className="text-red-500 text-sm mt-1">Password is required</p>
-          )}
-          {errors.password?.type === "minLength" && (
-            <p className="text-red-500 text-sm mt-1">Minimum 6 characters</p>
-          )}
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            {...register("password", {
+              required: "Password is required",
+              minLength: { value: 6, message: "Minimum 6 characters" },
+            })}
+            className="input input-bordered w-full pr-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-3 text-gray-500"
+          >
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </button>
         </div>
+        {errors.password && (
+          <p className="text-red-500 text-sm">
+            {errors.password.message}
+          </p>
+        )}
 
-        {/* Register Button */}
-        <button
-          type="submit"
-          className="w-full bg-primary hover:brightness-95
-          text-secondary font-bold py-3 rounded-lg transition"
-        >
+        <button className="btn btn-primary w-full">
           Register
         </button>
       </form>
 
-      {/* Already have account */}
-      <p className="mt-4 text-gray-600 text-sm">
+      <p className="mt-4 text-sm text-gray-600">
         Already have an account?
-        <Link
-          state={location.state}
-          to="/login"
-          className="ml-1 text-primary font-bold hover:underline"
-        >
+        <Link to="/login" className="ml-1 text-primary font-bold">
           Login
         </Link>
       </p>
 
-      {/* Divider */}
-      <div className="relative flex py-6 items-center">
-        <div className="flex-grow border-t border-gray-200"></div>
-        <span className="mx-4 text-gray-400 text-sm">Or</span>
-        <div className="flex-grow border-t border-gray-200"></div>
-      </div>
+      <div className="divider">OR</div>
 
-      {/* Google Button */}
       <GoogleLogin label="Register with Google" />
     </div>
   );

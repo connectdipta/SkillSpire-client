@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axiosPublic from "../../../api/axiosPublic";
 import useAuth from "../../../hooks/useAuth";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router";
+import { useNavigate, Link } from "react-router";
 
 const MyContests = () => {
   const { user } = useAuth();
@@ -85,13 +85,23 @@ const MyContests = () => {
                 <td>{contest.participants}</td>
 
                 <td className="space-x-2">
+                  {/* ✅ Edit & Delete ONLY if pending */}
                   {contest.status === "pending" && (
-                    <button
-                      onClick={() => handleDelete(contest._id)}
-                      className="btn btn-xs btn-error"
-                    >
-                      Delete
-                    </button>
+                    <>
+                      <Link
+                        to={`/dashboard/edit/${contest._id}`}
+                        className="btn btn-xs btn-info"
+                      >
+                        Edit
+                      </Link>
+
+                      <button
+                        onClick={() => handleDelete(contest._id)}
+                        className="btn btn-xs btn-error"
+                      >
+                        Delete
+                      </button>
+                    </>
                   )}
 
                   <button
