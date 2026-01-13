@@ -1,29 +1,34 @@
 import { createBrowserRouter } from "react-router";
 import RootLayout from "../layout/RootLayout";
-import Home from "../pages/Home";
 import AuthLayout from "../layout/AuthLayout";
+import DashboardLayout from "../layout/DashboardLayout";
+
+import Home from "../pages/Home";
 import Login from "../pages/Auth/Login";
 import Register from "../pages/Auth/Register";
-import PrivateRoute from "./PrivateRoute";
-import ErrorPage from "../pages/ErrorPage";
 import AboutUs from "../pages/AboutUs";
 import AllContests from "../pages/AllContests";
 import ContestDetails from "../pages/ContestDetails";
+import ErrorPage from "../pages/ErrorPage";
+
+import PrivateRoute from "./PrivateRoute";
+
+// Dashboard pages
+import AddContest from "../pages/Dashboard-User/AddContest";
+import MyContests from "../pages/Dashboard-User/MyContests";
+import Submissions from "../pages/Dashboard-User/Submissions";
 
 export const router = createBrowserRouter([
+  /* ---------- MAIN SITE ---------- */
   {
     path: "/",
     element: <RootLayout />,
     errorElement: <ErrorPage />,
     children: [
-      {
-        index: true,
-        element: <Home />,
-      },
-      {
-        path: "aboutUs",
-        element: (<AboutUs />),
-      },
+      { index: true, element: <Home /> },
+
+      { path: "aboutUs", element: <AboutUs /> },
+
       {
         path: "all-contests",
         element: (
@@ -32,6 +37,7 @@ export const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
+
       {
         path: "contests/:id",
         element: (
@@ -42,18 +48,41 @@ export const router = createBrowserRouter([
       },
     ],
   },
+
+  /* ---------- AUTH ---------- */
   {
     path: "/",
     element: <AuthLayout />,
-    errorElement: <ErrorPage />,
+    children: [
+      { path: "login", element: <Login /> },
+      { path: "register", element: <Register /> },
+    ],
+  },
+
+  /* ---------- DASHBOARD (PRIVATE) ---------- */
+  {
+    path: "/dashboard",
+    element: (
+      <PrivateRoute>
+        <DashboardLayout />
+      </PrivateRoute>
+    ),
     children: [
       {
-        path: "login",
-        element: <Login />,
+        index: true,
+        element: <AddContest />,
       },
       {
-        path: "register",
-        element: <Register />,
+        path: "add-contest",
+        element: <AddContest />,
+      },
+      {
+        path: "my-contests",
+        element: <MyContests />,
+      },
+      {
+        path: "submissions",
+        element: <Submissions />,
       },
     ],
   },
