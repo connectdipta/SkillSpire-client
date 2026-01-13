@@ -14,9 +14,9 @@ import ErrorPage from "../pages/ErrorPage";
 import PrivateRoute from "./PrivateRoute";
 
 // Dashboard pages
-import AddContest from "../pages/Dashboard-User/AddContest";
-import MyContests from "../pages/Dashboard-User/MyContests";
-import Submissions from "../pages/Dashboard-User/Submissions";
+import AddContest from "../pages/dashboard/creator/AddContest";
+import MyContests from "../pages/dashboard/creator/MyContests";
+import Submissions from "../pages/dashboard/creator/Submissions";
 
 export const router = createBrowserRouter([
   /* ---------- MAIN SITE ---------- */
