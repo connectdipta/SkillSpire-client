@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useParams, useNavigate } from "react-router";
 import axiosPublic from "../api/axiosPublic";
 import Swal from "sweetalert2";
 import useAuth from "../hooks/useAuth";
@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const ContestDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
 
   const [contest, setContest] = useState(null);
@@ -14,13 +15,38 @@ const ContestDetails = () => {
   const [isRegistered, setIsRegistered] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [submissionText, setSubmissionText] = useState("");
+  const [timeLeft, setTimeLeft] = useState("");
 
+  /* ---------------- FETCH CONTEST ---------------- */
   useEffect(() => {
     axiosPublic.get(`/contests/${id}`).then(res => {
       setContest(res.data);
       setLoading(false);
     });
   }, [id]);
+
+  /* ---------------- COUNTDOWN ---------------- */
+  useEffect(() => {
+    if (!contest?.deadline) return;
+
+    const interval = setInterval(() => {
+      const diff = new Date(contest.deadline) - new Date();
+
+      if (diff <= 0) {
+        setTimeLeft("Contest Ended");
+        clearInterval(interval);
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+
+      setTimeLeft(`${days}d ${hours}h ${minutes}m`);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [contest]);
 
   if (loading) {
     return (
@@ -40,38 +66,34 @@ const ContestDetails = () => {
 
   const deadlinePassed = new Date(contest.deadline) < new Date();
 
-  const handleRegister = async () => {
-    try {
-      await axiosPublic.post(`/contests/${id}/register`);
-      setIsRegistered(true);
-      setContest(prev => ({
-        ...prev,
-        participants: prev.participants + 1,
-      }));
-      Swal.fire("Registered!", "You are successfully registered.", "success");
-    } catch {
-      Swal.fire("Error", "Registration failed", "error");
-    }
+  /* ---------------- PAYMENT REDIRECT ---------------- */
+  const handlePay = () => {
+    navigate(`/payment/${id}`);
   };
 
+  /* ---------------- SUBMIT TASK ---------------- */
   const handleSubmitTask = async () => {
     if (!submissionText.trim()) return;
 
-    await axiosPublic.post("/submissions", {
-      contestId: id,
-      userEmail: user.email,
-      content: submissionText,
-    });
+    try {
+      await axiosPublic.post("/submissions", {
+        contestId: id,
+        userEmail: user.email,
+        content: submissionText,
+      });
 
-    Swal.fire("Submitted!", "Your task has been submitted.", "success");
-    setShowModal(false);
-    setSubmissionText("");
+      Swal.fire("Submitted!", "Your task has been submitted.", "success");
+      setShowModal(false);
+      setSubmissionText("");
+    } catch {
+      Swal.fire("Error", "Submission failed", "error");
+    }
   };
 
   return (
     <section className="max-w-6xl mx-auto px-4 py-12">
 
-      {/* Hero Banner */}
+      {/* ================= HERO ================= */}
       <motion.div
         initial={{ opacity: 0, scale: 0.97 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -90,56 +112,33 @@ const ContestDetails = () => {
         </div>
       </motion.div>
 
-      {/* Info Cards */}
+      {/* ================= INFO ================= */}
       <div className="grid sm:grid-cols-3 gap-6 mt-10">
-        {[
-          { label: "Participants", value: contest.participants, color: "text-primary" },
-          { label: "Prize Money", value: `$${contest.prize}`, color: "text-secondary" },
-          {
-            label: "Deadline",
-            value: deadlinePassed ? "Contest Ended" : new Date(contest.deadline).toLocaleDateString(),
-            color: deadlinePassed ? "text-red-500" : "text-green-600",
-          },
-        ].map((item, i) => (
-          <motion.div
-            key={i}
-            whileHover={{ y: -6 }}
-            transition={{ type: "spring", stiffness: 300 }}
-            className="bg-base-200 rounded-2xl p-6 text-center shadow-sm hover:shadow-lg"
-          >
-            <p className="text-sm text-base-content/60">{item.label}</p>
-            <p className={`text-2xl font-bold ${item.color}`}>{item.value}</p>
-          </motion.div>
-        ))}
+        <InfoCard label="Participants" value={contest.participants} color="text-primary" />
+        <InfoCard label="Prize Money" value={`$${contest.prize}`} color="text-secondary" />
+        <InfoCard
+          label="Deadline"
+          value={deadlinePassed ? "Contest Ended" : timeLeft}
+          color={deadlinePassed ? "text-red-500" : "text-green-600"}
+        />
       </div>
 
-      {/* Description */}
+      {/* ================= DESCRIPTION ================= */}
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 25 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
         className="mt-12 space-y-6"
       >
-        <div>
-          <h2 className="text-2xl font-bold text-secondary mb-2">
-            📘 Contest Description
-          </h2>
-          <p className="text-base-content/80 leading-relaxed">
-            {contest.description}
-          </p>
-        </div>
+        <Section title="📘 Contest Description">
+          {contest.description}
+        </Section>
 
-        <div>
-          <h2 className="text-2xl font-bold text-secondary mb-2">
-            📝 Task Instructions
-          </h2>
-          <p className="text-base-content/70 leading-relaxed">
-            {contest.taskInstruction}
-          </p>
-        </div>
+        <Section title="📝 Task Instructions">
+          {contest.taskInstruction}
+        </Section>
       </motion.div>
 
-      {/* Winner */}
+      {/* ================= WINNER ================= */}
       {contest.winner && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -149,41 +148,39 @@ const ContestDetails = () => {
           <img
             src={contest.winner.photo}
             className="w-14 h-14 rounded-full border-2 border-primary"
+            alt="Winner"
           />
           <div>
-            <p className="text-sm text-base-content/60">Winner</p>
+            <p className="text-sm opacity-70">Winner</p>
             <p className="font-bold text-secondary">🏆 {contest.winner.name}</p>
           </div>
         </motion.div>
       )}
 
-      {/* Actions */}
+      {/* ================= ACTIONS ================= */}
       <div className="mt-10 flex flex-wrap gap-4">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          disabled={deadlinePassed || isRegistered}
-          onClick={handleRegister}
-          className="px-8 py-3 rounded-full bg-primary text-secondary font-semibold
-          disabled:opacity-50"
+          disabled={deadlinePassed}
+          onClick={handlePay}
+          className="px-8 py-3 rounded-full bg-primary text-secondary font-semibold disabled:opacity-50"
         >
-          {isRegistered ? "Registered" : "Register / Pay"}
+          Register / Pay
         </motion.button>
 
         {isRegistered && !deadlinePassed && (
           <motion.button
             whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
             onClick={() => setShowModal(true)}
-            className="px-8 py-3 rounded-full border border-primary
-            text-primary font-semibold hover:bg-primary hover:text-secondary transition"
+            className="px-8 py-3 rounded-full border border-primary text-primary hover:bg-primary hover:text-secondary transition"
           >
             Submit Task
           </motion.button>
         )}
       </div>
 
-      {/* Submit Modal */}
+      {/* ================= MODAL ================= */}
       <AnimatePresence>
         {showModal && (
           <motion.div
@@ -205,7 +202,7 @@ const ContestDetails = () => {
                 onChange={(e) => setSubmissionText(e.target.value)}
                 rows="5"
                 placeholder="Paste GitHub repo / live link here..."
-                className="w-full border border-base-300 rounded-lg p-3 focus:ring-2 focus:ring-primary/40"
+                className="w-full border rounded-lg p-3 focus:ring-2 focus:ring-primary/40"
               />
 
               <div className="mt-5 flex justify-end gap-3">
@@ -224,5 +221,23 @@ const ContestDetails = () => {
     </section>
   );
 };
+
+/* ================= REUSABLE ================= */
+const InfoCard = ({ label, value, color }) => (
+  <motion.div
+    whileHover={{ y: -6 }}
+    className="bg-base-200 rounded-2xl p-6 text-center shadow-sm hover:shadow-lg"
+  >
+    <p className="text-sm opacity-60">{label}</p>
+    <p className={`text-2xl font-bold ${color}`}>{value}</p>
+  </motion.div>
+);
+
+const Section = ({ title, children }) => (
+  <div>
+    <h2 className="text-2xl font-bold text-secondary mb-2">{title}</h2>
+    <p className="text-base-content/80 leading-relaxed">{children}</p>
+  </div>
+);
 
 export default ContestDetails;

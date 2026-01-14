@@ -35,6 +35,7 @@ import ManageContests from "../pages/dashboard/admin/ManageContests";
 import PrivateRoute from "./PrivateRoute";
 import CreatorRoute from "./CreatorRoute";
 import AdminRoute from "./AdminRoute";
+import Payment from "../pages/Payment";
 
 export const router = createBrowserRouter([
   /* ================= MAIN SITE ================= */
@@ -60,6 +61,14 @@ export const router = createBrowserRouter([
             <ContestDetails />
           </PrivateRoute>
         ),
+      },
+      {
+        path: "payment/:id",
+        element: (
+          <PrivateRoute>
+            <Payment />
+          </PrivateRoute>
+         ),
       },
     ],
   },
