@@ -17,19 +17,18 @@ const AddContest = () => {
     setLoading(true);
 
     try {
-      // 🔹 Upload image to imgbb
-      const imageFile = data.image[0];
+      /* ================= IMAGE UPLOAD ================= */
       const formData = new FormData();
-      formData.append("image", imageFile);
+      formData.append("image", data.image[0]);
 
       const imgRes = await axios.post(
-        `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_KEY}`,
+        `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_imgHost}`,
         formData
       );
 
       const imageUrl = imgRes.data.data.url;
 
-      // 🔹 Contest payload
+      /* ================= CONTEST DATA ================= */
       const contestData = {
         name: data.name,
         image: imageUrl,
@@ -38,19 +37,24 @@ const AddContest = () => {
         type: data.type,
         price: Number(data.price),
         prize: Number(data.prize),
-        deadline,
-        participants: 0,
-        status: "pending",
+        deadline: deadline.toISOString(), // ✅ IMPORTANT
         creatorEmail: user.email,
       };
 
+      /* ================= SAVE TO DB ================= */
       await axiosPublic.post("/contests", contestData);
 
       Swal.fire("Success 🎉", "Contest submitted for approval", "success");
+
       reset();
+      setDeadline(new Date());
     } catch (error) {
-      Swal.fire("Error ❌", "Failed to add contest", "error");
       console.error(error);
+      Swal.fire(
+        "Error ❌",
+        error?.response?.data?.message || "Failed to add contest",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -58,7 +62,7 @@ const AddContest = () => {
 
   return (
     <div className="max-w-5xl mx-auto">
-      {/* Page Header */}
+      {/* Header */}
       <div className="mb-8">
         <h2 className="text-4xl font-extrabold text-secondary">
           Create New Contest
@@ -68,21 +72,21 @@ const AddContest = () => {
         </p>
       </div>
 
-      {/* Form Card */}
+      {/* Form */}
       <div className="bg-base-100 shadow-xl rounded-3xl p-8">
         <form onSubmit={handleSubmit(onSubmit)} className="grid gap-6">
 
-          {/* Contest Name */}
+          {/* Name */}
           <div>
             <label className="font-semibold">Contest Name</label>
             <input
               {...register("name", { required: true })}
-              placeholder="e.g. Frontend Coding Challenge"
               className="input input-bordered w-full mt-1"
+              placeholder="Frontend Coding Challenge"
             />
           </div>
 
-          {/* Image Upload */}
+          {/* Image */}
           <div>
             <label className="font-semibold">Contest Image</label>
             <input
@@ -95,23 +99,27 @@ const AddContest = () => {
 
           {/* Description */}
           <div>
-            <label className="font-semibold">Description (70+ words)</label>
+            <label className="font-semibold">
+              Description (100+ words)
+            </label>
             <textarea
               {...register("description", { required: true })}
-              rows={4}
+              rows={5}
               className="textarea textarea-bordered w-full mt-1"
-              placeholder="Describe the contest in detail..."
+              placeholder="Write a detailed contest description..."
             />
           </div>
 
           {/* Task Instruction */}
           <div>
-            <label className="font-semibold">Task Instructions</label>
+            <label className="font-semibold">
+              Task Instructions (100+ words)
+            </label>
             <textarea
               {...register("taskInstruction", { required: true })}
-              rows={4}
+              rows={5}
               className="textarea textarea-bordered w-full mt-1"
-              placeholder="Explain what participants need to submit..."
+              placeholder="Explain exactly what participants must submit..."
             />
           </div>
 
@@ -157,9 +165,10 @@ const AddContest = () => {
             <label className="font-semibold">Deadline</label>
             <DatePicker
               selected={deadline}
-              onChange={(date) => setDeadline(date)}
+              onChange={setDeadline}
               className="input input-bordered w-full mt-1"
               dateFormat="dd/MM/yyyy"
+              minDate={new Date()}
             />
           </div>
 
