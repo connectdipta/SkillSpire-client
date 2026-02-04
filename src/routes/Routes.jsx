@@ -36,6 +36,8 @@ import PrivateRoute from "./PrivateRoute";
 import CreatorRoute from "./CreatorRoute";
 import AdminRoute from "./AdminRoute";
 import Payment from "../pages/Payment";
+import Leaderboard from "../pages/Leaderboard";
+import DashboardHome from "../pages/dashboard/DashboardHome";
 
 export const router = createBrowserRouter([
   /* ================= MAIN SITE ================= */
@@ -46,6 +48,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "aboutUs", element: <AboutUs /> },
+      { path: "leaderboard", element: <Leaderboard /> },
       {
         path: "all-contests",
         element: (
@@ -94,6 +97,10 @@ export const router = createBrowserRouter([
     ),
     errorElement: <ErrorPage />,
     children: [
+      {
+      index: true,
+      element: <DashboardHome />,
+     },
       /* -------- CREATOR -------- */
       {
         path: "add-contest",
