@@ -7,20 +7,18 @@ import userProfile from "../assets/userProfile.png";
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const { user, logout } = useAuth();
-
   const [theme, setTheme] = useState("light");
 
-  const activeClass =
-    "bg-primary text-secondary font-semibold rounded-lg px-3 py-1";
+  // Dynamic active link styling with a subtle bottom indicator
+  const activeClass = "text-primary font-bold border-b-2 border-primary pb-1";
+  const inactiveClass = "text-base-content/70 hover:text-primary transition-all duration-300 font-medium";
 
-  //Initialize theme
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme") ?? "light";
     setTheme(storedTheme);
     document.documentElement.setAttribute("data-theme", storedTheme);
   }, []);
 
-  // ✅ Toggle theme
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
@@ -35,111 +33,109 @@ const Navbar = () => {
   const links = (
     <>
       <li>
-        <NavLink to="/" className={({ isActive }) => (isActive ? activeClass : "")}>
+        <NavLink to="/" className={({ isActive }) => (isActive ? activeClass : inactiveClass)}>
           Home
         </NavLink>
       </li>
       <li>
-        <NavLink to="/all-contests" className={({ isActive }) => (isActive ? activeClass : "")}>
+        <NavLink to="/all-contests" className={({ isActive }) => (isActive ? activeClass : inactiveClass)}>
           All Contests
         </NavLink>
       </li>
       <li>
-        <NavLink to="/leaderboard" className={({ isActive }) => (isActive ? activeClass : "")}>
+        <NavLink to="/leaderboard" className={({ isActive }) => (isActive ? activeClass : inactiveClass)}>
           Leaderboard
         </NavLink>
       </li>
       <li>
-        <NavLink to="/aboutUs" className={({ isActive }) => (isActive ? activeClass : "")}>
-          AboutUs
+        <NavLink to="/aboutUs" className={({ isActive }) => (isActive ? activeClass : inactiveClass)}>
+          About Us
         </NavLink>
       </li>
     </>
   );
 
   return (
-    <div className="mb-5 navbar bg-base-100 shadow-sm rounded-2xl mx-2 mt-2 px-4">
-      {/* Start */}
-      <div className="navbar-start">
-        <button onClick={() => setOpen(!open)} className="btn btn-ghost lg:hidden">
-          ☰
-        </button>
+    <div className="sticky top-0 z-[100] px-4 pt-4">
+      <div className="navbar bg-base-100/80 backdrop-blur-md border border-base-content/5 shadow-xl rounded-[1.5rem] px-6 py-3 transition-all duration-300">
+        
+        {/* Start: Logo & Mobile Menu */}
+        <div className="navbar-start">
+          <div className="dropdown">
+            <button 
+              onClick={() => setOpen(!open)} 
+              className="btn btn-ghost lg:hidden p-0 mr-4"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" />
+              </svg>
+            </button>
+            {open && (
+              <ul className="menu menu-sm bg-base-100 rounded-2xl mt-4 w-56 p-4 shadow-2xl border border-base-200 lg:hidden">
+                {links}
+              </ul>
+            )}
+          </div>
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <Logo />
+          </Link>
+        </div>
 
-        {open && (
-          <ul className="menu bg-base-100 absolute top-16 left-3 shadow w-52 p-2 z-50 lg:hidden">
+        {/* Center: Navigation Links */}
+        <div className="navbar-center hidden lg:flex">
+          <ul className="flex items-center gap-8 px-1">
             {links}
           </ul>
-        )}
+        </div>
 
-        <Link to="/" className="ml-2">
-          <Logo />
-        </Link>
-      </div>
+        {/* End: Actions */}
+        <div className="navbar-end gap-3">
+          
+          {/* Theme Toggle */}
+          <label className="swap swap-rotate btn btn-ghost btn-circle bg-base-200/50 hover:bg-base-200">
+            <input type="checkbox" onChange={toggleTheme} checked={theme === "dark"} />
+            <svg className="swap-off h-6 w-6 text-orange-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.06 1.06c.39.39 1.03.39 1.41 0a.996.996 0 000-1.41l-1.06-1.06zm1.06-10.96a.996.996 0 000-1.41.996.996 0 00-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36a.996.996 0 000-1.41.996.996 0 00-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>
+            <svg className="swap-on h-6 w-6 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12.1 22c4.9 0 9-4.1 9-9 0-4.6-3.5-8.4-8-8.9.5 1.4.3 3-.6 4.3-1.7 2.6-4.4 4.1-7.4 4.1-.1 0-.3 0-.4 0 1.2 2.8 3.9 4.5 7.4 4.5z"/></svg>
+          </label>
 
-      {/* Center */}
-      <div className="navbar-center hidden lg:flex">
-        <ul className="menu menu-horizontal gap-2">{links}</ul>
-      </div>
+          {!user ? (
+            <Link 
+              to="/login" 
+              className="btn btn-primary h-12 px-8 rounded-xl font-bold shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all text-slate-900"
+            >
+              Login
+            </Link>
+          ) : (
+            <div className="dropdown dropdown-end">
+              <label tabIndex={0} className="btn btn-ghost btn-circle avatar border-2 border-primary/20 hover:border-primary transition-all">
+                <div className="w-10 rounded-full">
+                  <img src={user.photoURL || userProfile} alt="profile" />
+                </div>
+              </label>
 
-      {/* End */}
-      <div className="navbar-end gap-2">
-        {/* 🌗 Professional Theme Toggle */}
-        <label className="swap swap-rotate btn btn-ghost btn-circle">
-          <input
-            type="checkbox"
-            onChange={toggleTheme}
-            checked={theme === "dark"}
-          />
-
-          {/* ☀️ Sun */}
-          <svg
-            className="swap-off h-5 w-5"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <circle cx="12" cy="12" r="5" strokeWidth="2" />
-            <path strokeWidth="2" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M16.95 16.95l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M16.95 7.05l1.42-1.42" />
-          </svg>
-
-          {/* 🌙 Moon */}
-          <svg
-            className="swap-on h-5 w-5"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeWidth="2"
-              d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"
-            />
-          </svg>
-        </label>
-
-        {!user ? (
-          <Link to="/login" className="btn btn-primary rounded-2xl text-secondary">
-            Login
-          </Link>
-        ) : (
-          <div className="dropdown dropdown-end">
-            <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-              <div className="w-10 rounded-full">
-                <img
-                  src={user.photoURL || userProfile}
-                  alt="profile"
-                />
-              </div>
-            </label>
-
-            <ul className="menu dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
-              <li className="font-semibold text-center">{user.displayName}</li>
-              <li><Link to="/dashboard">Dashboard</Link></li>
-              <li><button onClick={handleLogout}>Logout</button></li>
-            </ul>
-          </div>
-        )}
+              <ul tabIndex={0} className="menu menu-sm dropdown-content mt-4 z-[100] p-4 shadow-2xl bg-base-100 rounded-2xl w-64 border border-base-200">
+                <div className="px-4 py-3 mb-2 border-b border-base-200">
+                  <p className="text-sm font-bold opacity-80 uppercase tracking-wider">Account</p>
+                  <p className="text-primary font-black truncate">{user.displayName}</p>
+                </div>
+                <li>
+                  <Link to="/dashboard" className="py-3 flex items-center gap-3 hover:bg-primary/10 rounded-xl transition-colors">
+                    <span className="bg-primary/20 p-2 rounded-lg text-primary">⚙️</span>
+                    Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <button 
+                    onClick={handleLogout} 
+                    className="py-3 mt-1 flex items-center gap-3 hover:bg-error/10 text-error rounded-xl transition-colors"
+                  >
+                    <span className="bg-error/20 p-2 rounded-lg text-error">Logout</span>
+                  </button>
+                </li>
+              </ul>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

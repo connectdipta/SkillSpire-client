@@ -1,35 +1,56 @@
 import { FcGoogle } from "react-icons/fc";
 import useAuth from "../../hooks/useAuth";
-import axiosPublic from "../../api/axiosPublic";
 import { useNavigate, useLocation } from "react-router";
 import Swal from "sweetalert2";
+import { motion } from "framer-motion";
 
-const GoogleLogin = () => {
+const GoogleLogin = ({ label = "Continue with Google" }) => {
   const { signInGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleGoogleLogin = async () => {
-    try {
-      const result = await signInGoogle();
+    Swal.fire({
+      title: "Syncing with Google...",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });
 
-      await axiosPublic.post("/users", {
-        email: result.user.email,
-        name: result.user.displayName,
-        photo: result.user.photoURL,
+    try {
+      // ONLY Firebase login
+      await signInGoogle();
+
+      Swal.fire({
+        icon: "success",
+        title: "Success! 🚀",
+        text: "Welcome!",
+        timer: 1500,
+        showConfirmButton: false,
       });
 
-      Swal.fire("Success", "Logged in", "success");
-      navigate(location.state || "/");
+      // Redirect (AuthProvider handles JWT + role)
+      navigate(location.state || "/", { replace: true });
+
     } catch (err) {
-      Swal.fire("Error", err.message, "error");
+      Swal.fire({
+        icon: "error",
+        title: "Authentication Failed",
+        text: err?.message || "Google login failed",
+      });
     }
   };
 
   return (
-    <button onClick={handleGoogleLogin} className="btn w-full">
-      <FcGoogle /> Login with Google
-    </button>
+    <motion.button
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.98 }}
+      onClick={handleGoogleLogin}
+      className="group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl border border-base-300 bg-base-100 h-14 font-bold text-base-content transition-all hover:bg-base-200 hover:shadow-lg hover:shadow-base-300/50 active:bg-base-300"
+    >
+      <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-500 group-hover:translate-x-full"></div>
+      <FcGoogle className="text-2xl transition-transform group-hover:scale-110" />
+      <span className="tracking-tight">{label}</span>
+    </motion.button>
   );
 };
 

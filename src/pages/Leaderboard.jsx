@@ -1,185 +1,200 @@
 import React, { useEffect, useState } from "react";
 import axiosPublic from "../api/axiosPublic";
-import { FaTrophy, FaMedal } from "react-icons/fa";
+import { FaTrophy, FaMedal, FaCrown, FaStar } from "react-icons/fa";
 import userProfile from "../assets/userProfile.png";
+
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const Leaderboard = () => {
   const [leaders, setLeaders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    AOS.init({
+      duration: 1000,
+      once: true,
+      easing: "ease-out-cubic",
+      offset: 120,
+    });
+  }, []);
+
+  useEffect(() => {
     axiosPublic
       .get("/leaderboard")
-      .then(res => setLeaders(res.data))
+      .then((res) => setLeaders(res.data))
+      .catch((err) => console.error("Leaderboard fetch error:", err))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) {
     return (
-      <p className="text-center py-20 text-lg font-semibold animate-pulse">
-        Loading leaderboard…
-      </p>
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <span className="loading loading-infinity loading-lg text-primary"></span>
+        <p className="text-lg font-bold animate-pulse text-base-content/60">Assembling the Champions...</p>
+      </div>
     );
   }
 
-  if (!leaders.length) {
-    return (
-      <p className="text-center py-20 text-base-content/60">
-        No winners yet. Be the first champion 🏆
-      </p>
-    );
-  }
-const MotivationCard = ({ icon, title, text }) => (
-  <div className="bg-base-100 rounded-2xl p-6 text-center shadow-lg
-  hover:-translate-y-2 hover:shadow-2xl transition">
-    <div className="text-5xl mb-4">{icon}</div>
-    <h4 className="text-xl font-bold mb-2 text-secondary">{title}</h4>
-    <p className="text-base-content/70">{text}</p>
-  </div>
-);
+  // Reorder for Podium: [Rank 2, Rank 1, Rank 3] for a visual peak in the middle
+  const podiumOrder = leaders.length >= 3 
+    ? [leaders[1], leaders[0], leaders[2]] 
+    : leaders;
 
   return (
-    <section className="max-w-6xl mx-auto px-4 py-16">
-      {/* ================= HEADER ================= */}
-      <div className="text-center mb-14">
-        <h2 className="text-5xl font-extrabold text-transparent bg-clip-text
-        bg-gradient-to-r from-primary to-secondary">
-          🏆 Leaderboard
-        </h2>
-        <p className="mt-4 text-base-content/70 max-w-2xl mx-auto">
-          Celebrating the champions who proved their skills and dominated the contests
-        </p>
-      </div>
-
-      {/* ================= TOP 3 PODIUM ================= */}
-      {leaders.length >= 3 && (
-        <div className="grid md:grid-cols-3 gap-6 mb-16">
-          {leaders.slice(0, 3).map((user, index) => (
-            <PodiumCard key={user.email} user={user} rank={index} />
-          ))}
-        </div>
-      )}
-
-      {/* ================= REST OF LEADERBOARD ================= */}
-      <div className="space-y-4">
-        {leaders.slice(3).map((user, index) => (
-          <div
-            key={user.email}
-            className="flex items-center justify-between
-            bg-base-100 rounded-2xl shadow-md p-5
-            hover:shadow-xl hover:-translate-y-1 transition"
-          >
-            <div className="flex items-center gap-4">
-              <span className="text-xl font-bold w-8">
-                {index + 4}
-              </span>
-
-              <img
-                src={user.photo || userProfile}
-                className="w-12 h-12 rounded-full border object-cover"
-                alt="User"
-              />
-
-              <div>
-                <p className="font-semibold">{user.name}</p>
-                <p className="text-sm opacity-60">{user.email}</p>
-              </div>
-            </div>
-
-            <span className="badge badge-primary text-lg px-4 py-2">
-              <FaTrophy className="mr-1" /> {user.wins}
-            </span>
+    <section className="min-h-screen bg-base-100 pb-20 overflow-x-hidden">
+      {/* ================= HERO HEADER ================= */}
+      <div className="bg-gradient-to-b from-primary/5 to-transparent py-20 px-4 text-center">
+        <div data-aos="zoom-in">
+          <div className="inline-block p-3 bg-yellow-400/10 rounded-full mb-4">
+            <FaCrown className="text-4xl text-yellow-500 animate-bounce" />
           </div>
-        ))}
-      </div>
-
-            {/* ================= MOTIVATION SECTION ================= */}
-      <div className="mt-24 bg-gradient-to-r from-primary/10 to-secondary/10
-      rounded-3xl p-10">
-
-        <div className="text-center mb-12">
-          <h3 className="text-4xl font-extrabold text-secondary">
-            Your Name Could Be Here 🚀
-          </h3>
-          <p className="mt-4 text-base-content/70 max-w-2xl mx-auto">
-            SkillSpire is more than competitions — it’s a platform where talent
-            gets rewarded, skills get recognized, and careers get boosted.
+          <h1 className="text-4xl md:text-6xl font-black text-secondary tracking-tight">
+            Hall of <span className="text-primary">Fame</span>
+          </h1>
+          <p className="mt-4 text-base-content/60 max-w-xl mx-auto text-lg">
+            The elite performers who have conquered challenges and set new benchmarks.
           </p>
         </div>
-
-        {/* MOTIVATION CARDS */}
-        <div className="grid md:grid-cols-3 gap-8">
-          <MotivationCard
-            title="Sharpen Your Skills"
-            text="Compete in real-world challenges designed by experts and improve
-            your coding, design, and creative skills."
-            icon="💡"
-          />
-
-          <MotivationCard
-            title="Win Exciting Prizes"
-            text="Cash rewards, recognition, and leaderboard glory await top
-            performers in every contest."
-            icon="💰"
-          />
-
-          <MotivationCard
-            title="Build Your Reputation"
-            text="Climb the leaderboard, get noticed, and showcase your achievements
-            to the world."
-            icon="🏆"
-          />
-        </div>
-
-        {/* CTA */}
-        <div className="text-center mt-14">
-          <a
-            href="/all-contests"
-            className="btn btn-primary text-lg px-10 rounded-full shadow-lg
-            hover:scale-105 transition"
-          >
-            Join a Contest Now
-          </a>
-        </div>
       </div>
 
+      <div className="max-w-6xl mx-auto px-4">
+        {/* ================= VISUAL PODIUM (Only shows if 3+ users) ================= */}
+        {leaders.length >= 3 && (
+          <div className="flex flex-col md:flex-row items-end justify-center gap-4 md:gap-0 mb-20 mt-10">
+            {podiumOrder.map((user, index) => {
+              // index 0 = Rank 2, index 1 = Rank 1, index 2 = Rank 3
+              const isFirst = leaders[0].email === user.email;
+              const isThird = leaders[2].email === user.email;
+              
+              return (
+                <div
+                  key={user.email}
+                  className={`w-full md:w-1/3 flex flex-col items-center ${isFirst ? 'z-10 order-1 md:order-2' : isThird ? 'order-3' : 'order-2 md:order-1'}`}
+                  data-aos="fade-up"
+                  data-aos-delay={index * 150}
+                >
+                  <div className={`relative mb-4 ${isFirst ? 'scale-110' : 'scale-90 opacity-80'}`}>
+                    <img
+                      src={user.photo || userProfile}
+                      className={`w-24 h-24 md:w-32 md:h-32 rounded-full border-4 object-cover shadow-2xl ${isFirst ? 'border-yellow-400' : 'border-base-300'}`}
+                      alt={user.name}
+                    />
+                    <div className={`absolute -top-4 -right-2 w-10 h-10 rounded-full flex items-center justify-center text-xl shadow-lg
+                      ${isFirst ? 'bg-yellow-400 text-yellow-900' : 'bg-base-300 text-base-content'}`}>
+                      {isFirst ? <FaCrown /> : isThird ? "3" : "2"}
+                    </div>
+                  </div>
+                  
+                  <div className={`w-full p-6 text-center rounded-t-[2rem] shadow-xl border-x border-t border-base-200
+                    ${isFirst ? 'bg-base-200 h-64 md:h-80' : 'bg-base-200/50 h-48 md:h-60'}`}>
+                    <h3 className="font-black text-lg truncate px-2">{user.name}</h3>
+                    <p className="text-xs opacity-50 mb-4">{user.email}</p>
+                    <div className="badge badge-primary gap-2 p-4 font-bold">
+                      <FaTrophy /> {user.wins} Wins
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ================= THE RANKING LIST ================= */}
+        <div className="max-w-4xl mx-auto space-y-3">
+          <div className="px-6 py-2 flex justify-between text-xs font-black uppercase tracking-widest opacity-40">
+            <span>Rank & Player</span>
+            <span>Performance</span>
+          </div>
+          
+          {/* UPDATED LOGIC: If less than 3 leaders, show everyone in list. If 3+, skip first 3. */}
+          {leaders.slice(leaders.length >= 3 ? 3 : 0).map((user, index) => (
+            <div
+              key={user.email}
+              data-aos="fade-up"
+              className="group flex items-center justify-between bg-base-100 border border-base-200 rounded-3xl p-4 md:p-5 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-base-200 flex items-center justify-center font-black text-secondary group-hover:bg-primary group-hover:text-white transition-colors">
+                   {/* UPDATED LOGIC: Calculate Rank correctly based on whether podium is shown */}
+                   {index + (leaders.length >= 3 ? 4 : 1)}
+                </div>
+
+                <div className="relative">
+                  <img
+                    src={user.photo || userProfile}
+                    className="w-12 h-12 rounded-full border-2 border-base-200 object-cover"
+                    alt="User"
+                  />
+                  {user.wins > 5 && <FaStar className="absolute -top-1 -right-1 text-yellow-500 text-xs animate-pulse" />}
+                </div>
+
+                <div>
+                  <p className="font-bold text-secondary group-hover:text-primary transition-colors">{user.name}</p>
+                  <p className="text-xs opacity-50 hidden sm:block">{user.email}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="text-right hidden sm:block">
+                  <p className="text-xs font-black opacity-30 uppercase">Wins</p>
+                  <p className="font-black text-primary">{user.wins}</p>
+                </div>
+                <div className="bg-primary/10 text-primary w-12 h-12 rounded-2xl flex items-center justify-center">
+                   <FaMedal className="text-xl" />
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Fallback for empty state (matches your theme) */}
+          {leaders.length === 0 && (
+            <div className="text-center py-10 opacity-50 font-bold text-base-content/60">
+                No champions yet. Be the first!
+            </div>
+          )}
+        </div>
+
+        {/* ================= CTA / MOTIVATION ================= */}
+        <div 
+          className="mt-32 relative rounded-[3rem] overflow-hidden bg-secondary p-1 md:p-2"
+          data-aos="zoom-in"
+        >
+          <div className="bg-base-100 rounded-[2.8rem] p-10 md:p-20 text-center relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+            
+            <h2 className="text-3xl md:text-5xl font-black text-secondary mb-6">
+              Claim Your Spot at the <span className="text-primary">Top</span>
+            </h2>
+            <p className="max-w-2xl mx-auto text-base-content/60 text-lg mb-12">
+              Every champion was once a contender who refused to give up. Start your journey today and let the world see your name.
+            </p>
+
+            <div className="grid sm:grid-cols-3 gap-6 mb-12">
+               <Feature icon="⚡" title="Quick Wins" desc="Entry level contests to start your streak." />
+               <Feature icon="💎" title="Elite Rewards" desc="High-tier prizes for the best creators." />
+               <Feature icon="🚀" title="Pro Profile" desc="Showcase your wins to top recruiters." />
+            </div>
+
+            <a
+              href="/all-contests"
+              className="btn btn-primary btn-lg rounded-2xl px-12 font-black shadow-xl shadow-primary/20 hover:scale-105 transition-all"
+            >
+              Start Competing Now
+            </a>
+          </div>
+        </div>
+      </div>
     </section>
   );
 };
 
-/* ================= PODIUM CARD ================= */
-const PodiumCard = ({ user, rank }) => {
-  const colors = [
-    "from-yellow-400 to-yellow-600",
-    "from-gray-300 to-gray-500",
-    "from-orange-400 to-orange-600",
-  ];
-
-  const medals = ["🥇", "🥈", "🥉"];
-
-  return (
-    <div
-      className={`rounded-3xl p-6 text-center shadow-xl
-      bg-gradient-to-b ${colors[rank]} text-white
-      hover:-translate-y-2 transition`}
-    >
-      <div className="text-5xl mb-2">{medals[rank]}</div>
-
-      <img
-        src={user.photo || userProfile}
-        className="w-24 h-24 mx-auto rounded-full border-4 border-white object-cover"
-        alt="User"
-      />
-
-      <h3 className="text-xl font-bold mt-4">{user.name}</h3>
-      <p className="text-sm opacity-90">{user.email}</p>
-
-      <div className="mt-4 flex justify-center items-center gap-2">
-        <FaMedal />
-        <span className="font-semibold">{user.wins} Wins</span>
-      </div>
-    </div>
-  );
-};
+const Feature = ({ icon, title, desc }) => (
+  <div className="p-6 rounded-3xl bg-base-200/50 hover:bg-base-200 transition-colors">
+    <div className="text-3xl mb-2">{icon}</div>
+    <h4 className="font-bold text-secondary mb-1">{title}</h4>
+    <p className="text-xs opacity-60 leading-relaxed">{desc}</p>
+  </div>
+);
 
 export default Leaderboard;

@@ -9,15 +9,14 @@ const CreatorRoute = ({ children }) => {
   const [roleLoading, setRoleLoading] = useState(true);
 
   useEffect(() => {
-    if (user?.email) {
-      axiosPublic
-        .get(`/users/role/${user.email}`)
-        .then(res => {
-          setRole(res.data.role);
-          setRoleLoading(false);
-        });
-    }
-  }, [user]);
+    if (!user?.email) return;
+
+    axiosPublic
+      .get("/users/me")
+      .then(res => setRole(res.data.role))
+      .catch(() => setRole("user"))
+      .finally(() => setRoleLoading(false));
+  }, [user?.email]);
 
   if (loading || roleLoading) {
     return <p className="text-center py-20">Checking creator access…</p>;
@@ -27,7 +26,7 @@ const CreatorRoute = ({ children }) => {
     return children;
   }
 
-  return <Navigate to="/" />;
+  return <Navigate to="/" replace />;
 };
 
 export default CreatorRoute;

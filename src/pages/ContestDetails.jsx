@@ -1,93 +1,99 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
+import axiosSecure from "../api/axiosSecure";
 import axiosPublic from "../api/axiosPublic";
 import Swal from "sweetalert2";
 import useAuth from "../hooks/useAuth";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const ContestDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const [contest, setContest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [submissionText, setSubmissionText] = useState("");
   const [timeLeft, setTimeLeft] = useState("");
 
-  /* ================= FETCH CONTEST ================= */
   useEffect(() => {
-    axiosPublic.get(`/contests/${id}`).then(res => {
-      setContest(res.data);
-      setLoading(false);
-    });
+    AOS.init({ duration: 1000, once: true });
+  }, []);
+
+  /* ================= LOGIN GUARD ================= */
+  useEffect(() => {
+    if (!authLoading && !user) {
+      Swal.fire("Login required", "Please login first", "warning");
+      navigate("/login");
+    }
+  }, [user, authLoading, navigate]);
+
+  /* ================= LOAD DATA ================= */
+  useEffect(() => {
+    const loadContest = async () => {
+      try {
+        const res = await axiosPublic.get(`/contests/${id}`);
+        setContest(res.data);
+      } catch {
+        Swal.fire("Error", "Failed to load contest", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadContest();
   }, [id]);
 
-  /* ================= CHECK REGISTRATION ================= */
   useEffect(() => {
     if (!user?.email) return;
-
-    axiosPublic
-      .get(`/users/participated/${user.email}`)
-      .then(res => {
-        if (res.data.includes(id)) {
-          setIsRegistered(true);
-        }
-      });
+    axiosSecure.get("/users/me").then(res => {
+      setIsRegistered(res.data.participatedContests?.includes(id));
+    });
+    axiosSecure.get("/submissions", { params: { contestId: id } }).then(res => {
+      const submitted = res.data.some(s => s.userEmail === user.email);
+      setHasSubmitted(submitted);
+    });
   }, [id, user]);
 
   /* ================= COUNTDOWN ================= */
   useEffect(() => {
-    if (!contest?.deadline) return;
-
+    if (!contest?.deadline || contest?.status === "ended") return;
     const interval = setInterval(() => {
       const diff = new Date(contest.deadline) - new Date();
-
       if (diff <= 0) {
-        setTimeLeft("Contest Ended");
+        setTimeLeft("Ended");
         clearInterval(interval);
         return;
       }
-
       const d = Math.floor(diff / (1000 * 60 * 60 * 24));
       const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
       const m = Math.floor((diff / (1000 * 60)) % 60);
-
       setTimeLeft(`${d}d ${h}h ${m}m`);
     }, 1000);
-
     return () => clearInterval(interval);
   }, [contest]);
 
-  if (loading) {
-    return (
-      <div className="min-h-[50vh] flex items-center justify-center font-semibold">
-        Loading contest details...
-      </div>
-    );
-  }
+  if (loading || authLoading) return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+      <span className="loading loading-bars loading-lg text-primary"></span>
+      <p className="animate-pulse font-medium text-base-content/60">Fetching contest data...</p>
+    </div>
+  );
 
-  const deadlinePassed = new Date(contest.deadline) < new Date();
+  if (!contest) return <div className="text-center py-20 text-error font-bold">Contest not found</div>;
 
-  /* ================= PAY ================= */
-  const handlePay = () => {
-    navigate(`/payment/${id}`);
-  };
+  const contestEnded = contest.status === "ended" || new Date(contest.deadline) < new Date();
 
-  /* ================= SUBMIT ================= */
   const handleSubmitTask = async () => {
     if (!submissionText.trim()) return;
-
     try {
-      await axiosPublic.post("/submissions", {
-        contestId: id,
-        userEmail: user.email,
-        content: submissionText,
-      });
-
-      Swal.fire("Submitted!", "Your task has been submitted.", "success");
+      await axiosSecure.post("/submissions", { contestId: id, content: submissionText });
+      Swal.fire("Success!", "Task submitted successfully", "success");
+      setHasSubmitted(true);
       setShowModal(false);
       setSubmissionText("");
     } catch {
@@ -96,106 +102,170 @@ const ContestDetails = () => {
   };
 
   return (
-    <section className="max-w-6xl mx-auto px-4 py-12">
-
-      {/* HERO */}
-      <div className="relative rounded-3xl overflow-hidden shadow-xl">
-        <img
-          src={contest.image}
-          alt={contest.name}
-          className="w-full h-[420px] object-cover"
-        />
-        <div className="absolute inset-0 bg-black/40 flex items-end p-8">
-          <h1 className="text-5xl font-extrabold text-white">
+    <section className="min-h-screen bg-base-100 pb-20">
+      {/* ================= HERO SECTION ================= */}
+      <div className="relative h-[400px] md:h-[500px] w-full overflow-hidden">
+        <img src={contest.image} alt={contest.name} className="w-full h-full object-cover scale-105" />
+        <div className="absolute inset-0 bg-gradient-to-t from-base-100 via-base-100/40 to-transparent" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4" data-aos="zoom-out">
+          <div className="badge badge-primary badge-outline px-4 py-3 mb-4 backdrop-blur-md bg-white/10 uppercase tracking-widest text-xs font-bold">
+            {contest.type || "Competition"}
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black text-white drop-shadow-2xl mb-4">
             {contest.name}
           </h1>
+          <div className="flex gap-4">
+            <span className={`badge border-none px-4 py-3 font-bold text-white ${contestEnded ? 'bg-error' : 'bg-success'}`}>
+              {contestEnded ? "Finished" : `Ends in: ${timeLeft}`}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* INFO */}
-      <div className="grid sm:grid-cols-3 gap-6 mt-10">
-        <InfoCard label="Participants" value={contest.participants} />
-        <InfoCard label="Prize Money" value={`$${contest.prize}`} />
-        <InfoCard
-          label="Deadline"
-          value={deadlinePassed ? "Contest Ended" : timeLeft}
-        />
-      </div>
+      <div className="max-w-7xl mx-auto px-4 -mt-20 relative z-10">
+        <div className="grid lg:grid-cols-12 gap-8">
+          
+          {/* LEFT CONTENT */}
+          <div className="lg:col-span-8 space-y-8">
+            {/* STATS ROW */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4" data-aos="fade-up">
+              <InfoCard icon="👥" label="Participants" value={contest.participants} />
+              <InfoCard icon="💰" label="Prize Pool" value={`$${contest.prize}`} />
+              <div className="hidden md:block">
+                <InfoCard icon="📅" label="Deadline" value={new Date(contest.deadline).toLocaleDateString()} />
+              </div>
+            </div>
 
-      {/* DESCRIPTION */}
-      <div className="mt-12 space-y-6">
-        <Section title="📘 Contest Description">
-          {contest.description}
-        </Section>
+            {/* WINNER SECTION */}
+            {contest.winner && (
+              <div className="bg-gradient-to-br from-yellow-400/20 to-orange-500/10 border-2 border-yellow-500/50 rounded-3xl p-8 relative overflow-hidden" data-aos="flip-up">
+                <div className="absolute -right-10 -top-10 text-9xl opacity-10">🏆</div>
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                  <div className="relative">
+                    <img 
+                      src={contest.winner.photo?.trim() ? contest.winner.photo : "https://i.ibb.co/2kRZqkB/user.png"} 
+                      alt={contest.winner.name} 
+                      className="w-28 h-28 rounded-full border-4 border-yellow-500 shadow-xl object-cover" 
+                    />
+                    <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-yellow-500 text-black font-black px-3 py-1 rounded-full text-xs">WINNER</div>
+                  </div>
+                  <div className="text-center md:text-left">
+                    <h3 className="text-3xl font-black text-secondary">Congratulations!</h3>
+                    <p className="text-xl font-bold">{contest.winner.name}</p>
+                    <p className="opacity-60">{contest.winner.email}</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
-        <Section title="📝 Task Instructions">
-          {contest.taskInstruction}
-        </Section>
-      </div>
+            {/* CONTENT TABS/SECTIONS */}
+            <div className="bg-base-200/50 p-6 md:p-10 rounded-3xl space-y-8" data-aos="fade-up">
+              <Section title="📘 About the Contest">{contest.description}</Section>
+              <hr className="border-base-300" />
+              <Section title="📝 Instructions">{contest.taskInstruction}</Section>
+            </div>
+          </div>
 
-      {/* ACTIONS */}
-      <div className="mt-10 flex gap-4">
-        <button
-          disabled={deadlinePassed || isRegistered}
-          onClick={handlePay}
-          className="btn btn-primary rounded-full"
-        >
-          {isRegistered ? "Registered" : "Register / Pay"}
-        </button>
+          {/* RIGHT SIDEBAR (STICKY) */}
+          <div className="lg:col-span-4 lg:sticky lg:top-24 h-fit">
+            <div className="bg-base-100 border border-base-300 shadow-2xl rounded-3xl p-8 space-y-6" data-aos="fade-left">
+              <h4 className="text-xl font-bold">Registration Area</h4>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm opacity-70">
+                  <span>Registration Fee:</span>
+                  <span className="font-bold text-base-content">${contest.price || "0.00"}</span>
+                </div>
+                <div className="flex justify-between text-sm opacity-70">
+                  <span>Status:</span>
+                  <span className={`font-bold ${isRegistered ? 'text-success' : 'text-primary'}`}>
+                    {isRegistered ? 'Joined' : 'Open'}
+                  </span>
+                </div>
+              </div>
 
-        {isRegistered && !deadlinePassed && (
-          <button
-            onClick={() => setShowModal(true)}
-            className="btn btn-outline rounded-full"
-          >
-            Submit Task
-          </button>
-        )}
-      </div>
-
-      {/* MODAL */}
-      <AnimatePresence>
-        {showModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-base-100 rounded-2xl p-6 w-full max-w-md">
-              <h3 className="text-xl font-bold mb-4">Submit Your Task</h3>
-
-              <textarea
-                rows="5"
-                value={submissionText}
-                onChange={e => setSubmissionText(e.target.value)}
-                className="textarea textarea-bordered w-full"
-              />
-
-              <div className="mt-4 flex justify-end gap-3">
-                <button onClick={() => setShowModal(false)}>Cancel</button>
+              <div className="pt-4 space-y-3">
                 <button
-                  onClick={handleSubmitTask}
-                  className="btn btn-primary"
+                  disabled={contestEnded || isRegistered}
+                  onClick={() => navigate(`/payment/${id}`)}
+                  className={`btn btn-block h-14 rounded-2xl text-lg font-bold transition-all border-none ${isRegistered ? 'bg-success/20 text-success' : 'btn-primary shadow-lg shadow-primary/30'}`}
                 >
-                  Submit
+                  {isRegistered ? "✓ Registered" : "Join Contest"}
                 </button>
+
+                {isRegistered && !contestEnded && !hasSubmitted && (
+                  <button onClick={() => setShowModal(true)} className="btn btn-outline btn-block h-14 rounded-2xl border-2 hover:bg-secondary">
+                    🚀 Submit Task Now
+                  </button>
+                )}
+
+                {hasSubmitted && (
+                  <div className="p-4 bg-success/10 rounded-xl border border-success/20 text-center">
+                    <p className="text-success font-bold text-sm">✅ Submission Received</p>
+                  </div>
+                )}
+
+                {contestEnded && !contest.winner && (
+                  <div className="p-4 bg-base-200 rounded-xl text-center italic text-sm opacity-60">
+                    Results are being processed...
+                  </div>
+                )}
               </div>
             </div>
           </div>
+
+        </div>
+      </div>
+
+      {/* ================= MODAL ================= */}
+      <AnimatePresence>
+        {showModal && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4"
+          >
+            <motion.div 
+              initial={{ y: 50, scale: 0.9 }} animate={{ y: 0, scale: 1 }} exit={{ y: 50, scale: 0.9 }}
+              className="bg-base-100 rounded-3xl p-8 w-full max-w-lg shadow-2xl shadow-primary/20"
+            >
+              <h3 className="text-2xl font-black mb-2">Ready to Submit?</h3>
+              <p className="text-sm opacity-60 mb-6">Make sure your work follows all instructions carefully.</p>
+
+              <textarea
+                rows="6"
+                value={submissionText}
+                onChange={e => setSubmissionText(e.target.value)}
+                className="textarea textarea-bordered w-full rounded-2xl p-4 focus:ring-2 focus:ring-primary/50 text-lg"
+                placeholder="Paste your Google Drive link or GitHub URL here..."
+              />
+
+              <div className="mt-6 flex gap-3">
+                <button onClick={() => setShowModal(false)} className="btn btn-ghost flex-1 rounded-xl">Cancel</button>
+                <button onClick={handleSubmitTask} className="btn btn-primary flex-1 rounded-xl font-bold">Finish Submission</button>
+              </div>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </section>
   );
 };
 
-/* ================= REUSABLE ================= */
-const InfoCard = ({ label, value }) => (
-  <div className="bg-base-200 rounded-xl p-6 text-center">
-    <p className="text-sm opacity-60">{label}</p>
-    <p className="text-2xl font-bold">{value}</p>
+const InfoCard = ({ icon, label, value }) => (
+  <div className="bg-base-200/50 backdrop-blur-md rounded-2xl p-4 text-center border border-base-300">
+    <div className="text-2xl mb-1">{icon}</div>
+    <p className="text-[10px] md:text-xs uppercase tracking-widest opacity-50 font-black">{label}</p>
+    <p className="text-lg md:text-xl font-black text-secondary">{value}</p>
   </div>
 );
 
 const Section = ({ title, children }) => (
-  <div>
-    <h2 className="text-2xl font-bold mb-2">{title}</h2>
-    <p className="opacity-80">{children}</p>
+  <div className="space-y-4">
+    <h2 className="text-xl md:text-2xl font-black text-secondary flex items-center gap-3">
+      {title}
+    </h2>
+    <div className="leading-relaxed opacity-80 text-sm md:text-base whitespace-pre-wrap">
+      {children}
+    </div>
   </div>
 );
 
