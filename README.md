@@ -8,7 +8,6 @@ Built with **React**, **Firebase Authentication**, and a modern UI/UX approach.
 
 ## 🔗 Live Website
 - **Local URL:** `http://localhost:5173`  
-*(Replace with deployed URL when hosted)*
 
 ---
 
@@ -163,7 +162,7 @@ src/
 
 ## ⚙️ Environment Variables
 
-Create a `.env` file in the frontend root:
+Create a `.env` file in the frontend root and add:
 
 ```env
 VITE_apiKey=your_firebase_api_key
@@ -192,52 +191,63 @@ Submissions
 Leaderboard
 
 👉 Make sure the backend server is running before login.
-## 🔑 Demo Login Credentials
 
+🔑 Demo Login Credentials
 Use the following credentials to explore different roles in the application.
 
-> ⚠️ These credentials are for **testing/demo purposes only**.
+⚠️ These credentials are for testing/demo purposes only.
 
-### 🛡️ Admin Account
-- **Email:** dip@gmail.com  
-- **Password:** dip@gmail.com  
+🛡️ Admin Account
+Email: dip@gmail.com
 
-**Admin Access Includes:**
-- Approve / reject contests  
-- Delete contests  
-- Manage users  
-- Full system control  
+Password: dip@gmail.com
 
----
+Admin Access Includes:
 
-### 🧑‍🎨 Contest Creator Account
-- **Email:** dipta@gmail.com  
-- **Password:** dipta@gmail.com  
+Approve / reject contests
 
-**Creator Access Includes:**
-- Create contests  
-- Edit/Delete pending contests  
-- View submissions  
-- Declare winners  
+Delete contests
 
----
+Manage users
 
-### 👤 Normal User Account
-- **Email:** user@skillspire.com  
-- **Password:** User@123  
+Full system control
 
-**User Access Includes:**
-- Join contests  
-- Submit entries  
-- View leaderboard  
-- View winning contests  
+🧑‍🎨 Contest Creator Account
+Email: dipta@gmail.com
 
----
+Password: dipta@gmail.com
 
-### 🔐 Notes
-- Authentication is handled using **Firebase Authentication**
-- Role verification is done via **backend JWT**
-- JWT is stored in **HTTP-only cookies** for security
+Creator Access Includes:
+
+Create contests
+
+Edit/Delete pending contests
+
+View submissions
+
+Declare winners
+
+👤 Normal User Account
+Email: user@skillspire.com
+
+Password: User@123
+
+User Access Includes:
+
+Join contests
+
+Submit entries
+
+View leaderboard
+
+View winning contests
+
+🔐 Notes
+Authentication handled using Firebase Authentication
+
+Role verification via backend JWT
+
+JWT stored in HTTP-only cookies for enhanced security
 
 ✅ Assignment Requirement Coverage
 ✔ Google & Email Authentication
@@ -252,12 +262,3 @@ Use the following credentials to explore different roles in the application.
 👨‍💻 Author
 DIPTA ACHARJEE
 BSc in CSE
-
-SkillSpire – Contest Creation Platform 🚀
-
-
-If you want next, I can:
-- 🔥 Align **frontend + backend README styling**
-- 📸 Add **screenshots section**
-- 🌍 Add **deployment guide (Netlify/Vercel)**
-- 🎓 Simplify for **university assignment submission**
