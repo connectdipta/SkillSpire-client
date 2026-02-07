@@ -76,43 +76,42 @@ Built with **React**, **Firebase Authentication**, and a modern UI/UX approach.
 ## 📂 Project Structure
 src/
 ├── api/
-│ ├── axiosPublic.js
-│ └── axiosSecure.js
+│   ├── axiosPublic.js
+│   └── axiosSecure.js
 │
 ├── components/
-│ ├── ContestCard.jsx
-│ ├── GoogleLogin.jsx
-│ └── Navbar.jsx
+│   ├── ContestCard.jsx
+│   ├── GoogleLogin.jsx
+│   └── Navbar.jsx
 │
 ├── hooks/
-│ ├── useAuth.js
-│ ├── useAdmin.js
-│ └── useCreator.js
+│   ├── useAuth.js
+│   ├── useAdmin.js
+│   └── useCreator.js
 │
 ├── layout/
-│ ├── DashboardLayout.jsx
-│ └── MainLayout.jsx
+│   ├── DashboardLayout.jsx
+│   └── MainLayout.jsx
 │
 ├── pages/
-│ ├── Home.jsx
-│ ├── Login.jsx
-│ ├── Register.jsx
-│ ├── Leaderboard.jsx
-│ ├── ContestDetails.jsx
-│ └── Dashboard/
-│ ├── MyParticipated.jsx
-│ ├── MyWinnings.jsx
-│ ├── ManageContests.jsx
-│ └── ManageUsers.jsx
+│   ├── Home.jsx
+│   ├── Login.jsx
+│   ├── Register.jsx
+│   ├── Leaderboard.jsx
+│   ├── ContestDetails.jsx
+│   └── Dashboard/
+│       ├── MyParticipated.jsx
+│       ├── MyWinnings.jsx
+│       ├── ManageContests.jsx
+│       └── ManageUsers.jsx
 │
 ├── provider/
-│ └── AuthProvider.jsx
+│   └── AuthProvider.jsx
 │
 ├── routes/
-│ └── Routes.jsx
+│   └── Routes.jsx
 │
 └── main.jsx
-
 
 ---
 
