@@ -192,6 +192,52 @@ Submissions
 Leaderboard
 
 👉 Make sure the backend server is running before login.
+## 🔑 Demo Login Credentials
+
+Use the following credentials to explore different roles in the application.
+
+> ⚠️ These credentials are for **testing/demo purposes only**.
+
+### 🛡️ Admin Account
+- **Email:** dip@gmail.com  
+- **Password:** dip@gmail.com  
+
+**Admin Access Includes:**
+- Approve / reject contests  
+- Delete contests  
+- Manage users  
+- Full system control  
+
+---
+
+### 🧑‍🎨 Contest Creator Account
+- **Email:** dipta@gmail.com  
+- **Password:** dipta@gmail.com  
+
+**Creator Access Includes:**
+- Create contests  
+- Edit/Delete pending contests  
+- View submissions  
+- Declare winners  
+
+---
+
+### 👤 Normal User Account
+- **Email:** user@skillspire.com  
+- **Password:** User@123  
+
+**User Access Includes:**
+- Join contests  
+- Submit entries  
+- View leaderboard  
+- View winning contests  
+
+---
+
+### 🔐 Notes
+- Authentication is handled using **Firebase Authentication**
+- Role verification is done via **backend JWT**
+- JWT is stored in **HTTP-only cookies** for security
 
 ✅ Assignment Requirement Coverage
 ✔ Google & Email Authentication
